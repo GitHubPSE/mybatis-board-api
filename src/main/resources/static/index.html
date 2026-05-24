@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>게시판</title>
+    <style>
+
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5>게시판</h5>
+        <div class="d-flex align-items-center gap-2">
+            <select id="pageSize" class="form-select" style="width:auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="50">50</option>
+            </select>
+            <button id="write" type="button" class="btn btn-primary rounded-0">글쓰기</button>
+        </div>
+    </div>
+    <table class="table table-hover border-top border-dark">
+        <thead>
+            <tr class="border-bottom border-dark">
+                <th style="width: 8%">번호</th>
+                <th>제목</th>
+                <th style="width: 8%">작성자</th>
+                <th style="width: 15%">작성일</th>
+                <th style="width: 8%">조회수</th>
+            </tr>
+        </thead>
+        <tbody id="list"></tbody>
+    </table>
+    <div class="d-flex justify-content-center mt-3" id="pagination"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // URL 파라미터에서 페이지 정보 가져오기
+    const param = new URLSearchParams(window.location.search);
+    const page = param.get('page') ? param.get('page') : 1;
+    const pageSize = param.get('pageSize')? param.get('pageSize') : 10;
+
+    // URL 파리미터로 게시글 가져오기
+    $('#pageSize').val(pageSize);
+    loadList(page);
+
+    //페이지 사이즈 변경
+    $('#pageSize').on('change', function() {
+        location.href = '/index.html?page=1&pageSize=' + $(this).val();
+    });
+
+    // 뒤로가기 시 조회수 정상 조회용
+    window.addEventListener('pageshow', function(){
+        loadList(page);
+    });
+
+    // 게시글 목록 불러오기
+    function loadList(page){
+        $.ajax({
+            url: '/api/board/list?page=' + page + '&pageSize=' + $('#pageSize').val(),
+            type: 'GET',
+            success:function(data){
+                let html = '';
+                if(data.list.length == 0){
+                    html += '<tr><td colspan="5" class="text-center">게시글이 없습니다.</td></tr>'
+                } else {
+                    $.each(data.list, function(index, board){
+                        html += '<tr>' +
+                            '<td class="td-center">' + board.id + '</td>' +
+                            '<td><a class="title-link" href="/detail.html?id=' + board.id + '">' + board.title + '</a></td>' +
+                            '<td class="td-center text-nowrap">' + board.author + '</td>' +
+                            '<td class="td-center">' + board.regDate.slice(0, 16).replace('T', ' ') + '</td>' +
+                            '<td class="td-center">' + board.viewCount + '</td>' +
+                            '</tr>';
+                    });
+                }
+                $('#list').html(html);
+                renderPagination(data.totalPages, page);
+            }
+        });
+    }
+
+    // 페이징
+    function renderPagination(totalPages, page){
+        let html = '<ul class="pagination">';
+        for(let i = 1; i <= totalPages; i++){
+            html += '<li class="page-item ' + (i == page ? 'active' : '') + '">' +
+                '<a class="page-link rounded-0" href="/index.html?page=' + i + '&pageSize=' + pageSize + '">' + i + '</a>'
+                '</li>';
+        }
+        html += "</ul>";
+        $("#pagination").html(html);
+    }
+
+    // 글쓰기 버튼
+    $("#write").on("click", function(){
+        location.href = '/edit.html';
+    });
+</script>
+</body>
+</html>
