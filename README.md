@@ -39,6 +39,7 @@ board/
 ├── sql/
 │   ├── init.sql                  # 테이블 생성 및 샘플 데이터
 │   └── ERD.png
+├── docker-compose.yml            # 로컬 PostgreSQL 실행
 ├── build.gradle
 └── settings.gradle
 ```
@@ -109,32 +110,18 @@ Base URL: `http://localhost:8080/api/board`
 ### Prerequisites
 
 - Java 17
-- PostgreSQL
+- Docker
 - Gradle
 
 ### 데이터베이스 설정
 
-1. PostgreSQL에서 `board` 데이터베이스 생성
-
-```sql
-CREATE DATABASE board;
-```
-
-2. 테이블 생성 및 샘플 데이터 삽입
+Docker Compose로 PostgreSQL을 띄웁니다. 최초 실행 시 `sql/init.sql`이 자동으로 실행되어 테이블과 샘플 데이터까지 준비됩니다.
 
 ```bash
-psql -U {username} -d board -f sql/init.sql
+docker compose up -d
 ```
 
-3. `src/main/resources/application.yaml` 수정
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/board
-    username: {your_username}
-    password: {your_password}
-```
+`application.yaml`은 기본값(`board`/`board`, `localhost:5432`)이 위 Docker Compose 설정과 일치하도록 되어 있어 별도 수정 없이 바로 실행됩니다. 다른 환경에 연결하려면 환경변수(`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`)로 덮어쓰면 됩니다.
 
 ### 빌드 및 실행
 

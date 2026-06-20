@@ -1,9 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/board
-    # 이름과 비밀번호를 환경에 맞게 설정
-    username:
-    password:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/board}
+    username: ${DB_USERNAME:board}
+    password: ${DB_PASSWORD:board}
     driver-class-name: org.postgresql.Driver
 
 mybatis:
