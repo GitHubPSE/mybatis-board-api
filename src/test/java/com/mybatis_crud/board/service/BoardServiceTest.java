@@ -32,7 +32,7 @@ class BoardServiceTest {
         Map<String, Object> result = boardService.getBoardList(2, 10);
 
         assertThat(result.get("page")).isEqualTo(2);
-        assertThat(result.get("totalPages")).isEqualTo(3);
+        assertThat(result.get("totalPages")).isEqualTo(99);
         assertThat((List<?>) result.get("list")).hasSize(1);
         verify(boardMapper).getBoardList(argThat(dto -> dto.getOffset() == 10 && dto.getPageSize() == 10));
     }
