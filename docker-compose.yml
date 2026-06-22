@@ -13,6 +13,7 @@ services:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   app:
+    image: ghcr.io/githubpse/mybatis-board-api-app:latest
     build: .
     container_name: board-app
     environment:
