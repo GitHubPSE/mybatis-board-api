@@ -4,6 +4,7 @@ import com.mybatis_crud.board.dto.BoardDto;
 import com.mybatis_crud.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -30,29 +31,27 @@ public class BoardController {
     // 게시글 등록
     @PostMapping
     public ResponseEntity<Void> insertBoard(@RequestBody BoardDto boardDto) {
-        boardService.insertBoard(boardDto);
+        boardService.insertBoard(boardDto, currentLoginId());
         return ResponseEntity.ok().build();
     }
 
-    // 게시글 수정
+    // 게시글 수정 (작성자만 가능)
     @PutMapping("/{id}/update")
     public ResponseEntity<Void> updateBoard(@PathVariable Long id, @RequestBody BoardDto boardDto) {
         boardDto.setId(id);
-        boardService.updateBoard(boardDto);
+        boardService.updateBoard(boardDto, currentLoginId());
         return ResponseEntity.ok().build();
     }
 
-    // 게시글 삭제
+    // 게시글 삭제 (작성자만 가능)
     @PatchMapping("/{id}/delete")
     public ResponseEntity<Void> patchBoard(@PathVariable Long id) {
-        boardService.deleteBoard(id);
+        boardService.deleteBoard(id, currentLoginId());
         return ResponseEntity.ok().build();
     }
 
-    // 비밀번호 확인
-    @PostMapping("/{id}/password")
-    public ResponseEntity<Boolean> passwordCheck(@PathVariable Long id, @RequestBody BoardDto boardDto) {
-        boolean result = boardService.passwordCheck(id, boardDto.getPassword());
-        return ResponseEntity.ok(result);
+    // SecurityContext의 인증 주체 이름 = JWT subject = 로그인 아이디
+    private String currentLoginId() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

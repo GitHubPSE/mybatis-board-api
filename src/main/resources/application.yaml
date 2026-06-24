@@ -9,3 +9,7 @@ mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
+
+jwt:
+  secret: ${JWT_SECRET} # 기본값을 두지 않음 - 반드시 환경변수로 주입 (.env.example 참고)
+  expiration: ${JWT_EXPIRATION:3600000} # 1시간 (ms)

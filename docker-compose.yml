@@ -20,6 +20,8 @@ services:
       DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-board}
       DB_USERNAME: ${DB_USERNAME:-board}
       DB_PASSWORD: ${DB_PASSWORD:-board}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
     depends_on:
       - db
     ports:

@@ -13,6 +13,5 @@ public interface BoardMapper {
     void updateBoard(BoardDto boardDto);
     void deleteBoard(Long id);
     void viewCountPlus(Long id);
-    String passwordCheck(Long id);
     int getBoardCount();
 }

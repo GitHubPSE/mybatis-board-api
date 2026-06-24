@@ -8,6 +8,7 @@
 </head>
 <body>
 <div class="container mt-5">
+  <div class="d-flex justify-content-end align-items-center gap-2 mb-2" id="authNav"></div>
   <div class="board-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="board-title">게시판</h5>
@@ -37,7 +38,10 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/auth.js"></script>
 <script>
+    renderAuthNav();
+
     // URL 파라미터에서 페이지 정보 가져오기
     const param = new URLSearchParams(window.location.search);
     const page = param.get('page') ? param.get('page') : 1;
@@ -71,7 +75,7 @@
                         html += '<tr>' +
                             '<td class="td-center">' + board.id + '</td>' +
                             '<td><a class="title-link" href="/detail.html?id=' + board.id + '">' + board.title + '</a></td>' +
-                            '<td class="td-center text-nowrap">' + board.author + '</td>' +
+                            '<td class="td-center text-nowrap">' + board.userId + '</td>' +
                             '<td class="td-center">' + board.regDate.slice(0, 16).replace('T', ' ') + '</td>' +
                             '<td class="td-center">' + board.viewCount + '</td>' +
                             '</tr>';
@@ -95,8 +99,13 @@
         $("#pagination").html(html);
     }
 
-    // 글쓰기 버튼
+    // 글쓰기 버튼 (로그인 필요)
     $("#write").on("click", function(){
+        if (!isLoggedIn()) {
+            alert('로그인이 필요합니다.');
+            location.href = '/login.html';
+            return;
+        }
         location.href = '/edit.html';
     });
 </script>

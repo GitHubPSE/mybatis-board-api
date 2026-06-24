@@ -4,7 +4,7 @@
 
     <!--게시글 목록 조회-->
     <select id="getBoardList" parameterType="com.mybatis_crud.board.dto.BoardDto" resultType="com.mybatis_crud.board.dto.BoardDto">
-        SELECT id, title, author, view_count, reg_date, update_date
+        SELECT id, title, user_id, view_count, reg_date, update_date
         FROM board
         WHERE del_yn = 'N'
         ORDER BY id DESC
@@ -20,7 +20,7 @@
 
     <!--게시글 상세 조회-->
     <select id="getBoardDetail" parameterType="Long" resultType="com.mybatis_crud.board.dto.BoardDto">
-        SELECT id, title, content, author, view_count, reg_date, update_date
+        SELECT id, title, content, user_id, view_count, reg_date, update_date
         FROM board
         WHERE id = #{id}
         AND del_yn = 'N'
@@ -29,9 +29,9 @@
     <!--게시글 등록-->
     <insert id="insertBoard" parameterType="com.mybatis_crud.board.dto.BoardDto">
         INSERT INTO board
-        (title, content, author, password)
+        (title, content, user_id)
         VALUES
-        (#{title}, #{content}, #{author}, #{password})
+        (#{title}, #{content}, #{userId})
     </insert>
 
     <!--게시글 수정-->
@@ -39,8 +39,6 @@
         UPDATE board
         SET title = #{title},
         content = #{content},
-        password = #{password},
-        author = #{author},
         update_date = NOW()
         WHERE id = #{id}
     </update>
@@ -58,11 +56,4 @@
         SET view_count = view_count + 1
         WHERE id = #{id}
     </update>
-
-    <!--비밀번호 확인-->
-    <select id="passwordCheck" parameterType="Long" resultType="String">
-        SELECT password
-        FROM board
-        WHERE id = #{id}
-    </select>
 </mapper>

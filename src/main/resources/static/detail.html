@@ -8,6 +8,7 @@
 </head>
 <body>
 <div class="container mt-5">
+  <div class="d-flex justify-content-end align-items-center gap-2 mb-2" id="authNav"></div>
   <div class="board-card">
     <div class="board-detail-header">
         <span class="board-detail-id">#<span id="id"></span></span>
@@ -22,33 +23,19 @@
     <div class="board-detail-content" id="content"></div>
     <div class="d-flex justify-content-between mt-3">
         <button id="list" type="button" class="btn btn-secondary btn-lg rounded-pill">목록</button>
-        <div class="d-flex gap-2">
+        <div class="gap-2" id="ownerActions" style="display: none;">
             <button id="delete" type="button" class="btn btn-secondary btn-lg rounded-pill">삭제</button>
             <button id="edit" type="button" class="btn btn-primary btn-lg rounded-pill">수정</button>
         </div>
     </div>
   </div>
 </div>
-
-<div class="modal fade" id="passwordModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">비밀번호 확인</h5>
-            </div>
-            <div class="modal-body">
-                <input id="password" type="password" class="form-control" maxlength="4" placeholder="4자리 숫자 입력">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary rounded-pill" id="confirm">확인</button>
-            </div>
-        </div>
-    </div>
-</div>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/auth.js"></script>
 <script>
+    renderAuthNav();
+
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
 
@@ -59,7 +46,7 @@
         success: function (data) {
             $('#id').text(data.id);
             $('#title').text(data.title);
-            $('#author').text(data.author);
+            $('#author').text(data.userId);
             $('#viewCount').text(data.viewCount);
             $('#regDate').text(data.regDate.slice(0, 16).replace('T', ' '));
             $('#content').text(data.content);
@@ -67,6 +54,13 @@
                 $('#updateDate').text(data.updateDate.slice(0, 16).replace('T', ' '));
             }else{
                 $('#updateDate').text('-');
+            }
+
+            // 작성자 본인일 때만 수정/삭제 버튼 노출
+            if (isLoggedIn() && data.userId === getLoginId()) {
+                // d-flex는 Bootstrap에서 !important로 정의돼 있어 인라인 display:none을
+                // 덮어써버린다. 그래서 d-flex 클래스 없이 display만 JS로 직접 제어한다.
+                $('#ownerActions').css('display', 'flex');
             }
         }
     });
@@ -76,61 +70,27 @@
         history.back();
     })
 
-    let modalAction = '';
     // 수정 버튼
     $('#edit').on('click', function () {
-        modalAction = 'edit';
-        $('#password').val('');
-        new bootstrap.Modal(document.getElementById('passwordModal')).show();
+        location.href = '/edit.html?id=' + id;
     })
 
     // 삭제 버튼
     $('#delete').on('click', function () {
-        modalAction = 'delete';
-        $('#password').val('');
-        new bootstrap.Modal(document.getElementById('passwordModal')).show();
-    })
-
-    // 비밀번호 숫자만 입력 가능
-    $('#password').on('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    })
-
-    // 모달 확인 버튼
-    $('#confirm').on('click', function () {
-        const password = $('#password').val();
-        if(password.length != 4){
-            alert('비밀번호 4자리를 입력해주세요.');
+        if (!confirm('정말 삭제하시겠습니까?')) {
             return;
         }
 
         $.ajax({
-            url:'/api/board/' + id + '/password',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                password : password
-            }),
-            success: function (data) {
-               if(data == true){
-                   if(modalAction == 'edit'){
-                       location.href = '/edit.html?id=' + id;
-                   }else if(modalAction == 'delete'){
-                       $.ajax({
-                           url:'/api/board/' + id + '/delete',
-                           type: 'PATCH',
-                           success: function () {
-                               alert('삭제가 정상적으로 되었습니다.');
-                               location.href = '/index.html';
-                           },
-                           error: function () {
-                               alert('삭제에 실패했습니다.');
-                           }
-                       });
-                   }
-               } else {
-                   alert('비밀번호가 일치하지 않습니다.');
-               }
+            url:'/api/board/' + id + '/delete',
+            type: 'PATCH',
+            headers: authHeader(),
+            success: function () {
+                alert('삭제가 정상적으로 되었습니다.');
+                location.href = '/index.html';
+            },
+            error: function () {
+                alert('삭제에 실패했습니다.');
             }
         });
     })

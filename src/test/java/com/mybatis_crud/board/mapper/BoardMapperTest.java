@@ -1,6 +1,8 @@
 package com.mybatis_crud.board.mapper;
 
 import com.mybatis_crud.board.dto.BoardDto;
+import com.mybatis_crud.board.dto.UserDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +36,23 @@ class BoardMapperTest {
     @Autowired
     private BoardMapper boardMapper;
 
-    private BoardDto newBoard(String title, String author) {
+    @Autowired
+    private UserMapper userMapper;
+
+    @BeforeEach
+    void setUpUser() {
+        // board.user_id가 users.id를 참조(FK)하므로, 게시글을 등록하기 전에 사용자가 먼저 있어야 한다.
+        UserDto user = new UserDto();
+        user.setId("user1");
+        user.setPassword("hashed-password");
+        userMapper.insertUser(user);
+    }
+
+    private BoardDto newBoard(String title) {
         BoardDto boardDto = new BoardDto();
         boardDto.setTitle(title);
         boardDto.setContent("내용");
-        boardDto.setAuthor(author);
-        boardDto.setPassword("1234");
+        boardDto.setUserId("user1");
         return boardDto;
     }
 
@@ -57,21 +70,21 @@ class BoardMapperTest {
 
     @Test
     void insertBoard_등록후_getBoardDetail로_조회된다() {
-        boardMapper.insertBoard(newBoard("제목1", "작성자1"));
+        boardMapper.insertBoard(newBoard("제목1"));
         Long id = findIdByTitle("제목1");
 
         BoardDto result = boardMapper.getBoardDetail(id);
 
         assertThat(result.getTitle()).isEqualTo("제목1");
-        assertThat(result.getAuthor()).isEqualTo("작성자1");
+        assertThat(result.getUserId()).isEqualTo("user1");
         assertThat(result.getViewCount()).isZero();
     }
 
     @Test
     void getBoardList_del_yn이_N인_게시글만_id_내림차순으로_조회된다() {
-        boardMapper.insertBoard(newBoard("제목1", "작성자1"));
-        boardMapper.insertBoard(newBoard("제목2", "작성자2"));
-        boardMapper.insertBoard(newBoard("제목3", "작성자3"));
+        boardMapper.insertBoard(newBoard("제목1"));
+        boardMapper.insertBoard(newBoard("제목2"));
+        boardMapper.insertBoard(newBoard("제목3"));
         boardMapper.deleteBoard(findIdByTitle("제목2"));
 
         BoardDto pageRequest = new BoardDto();
@@ -85,7 +98,7 @@ class BoardMapperTest {
     @Test
     void getBoardList_offset과_pageSize로_페이징된다() {
         for (int i = 1; i <= 5; i++) {
-            boardMapper.insertBoard(newBoard("제목" + i, "작성자" + i));
+            boardMapper.insertBoard(newBoard("제목" + i));
         }
 
         BoardDto pageRequest = new BoardDto();
@@ -98,8 +111,8 @@ class BoardMapperTest {
 
     @Test
     void getBoardCount_del_yn이_N인_게시글만_카운트한다() {
-        boardMapper.insertBoard(newBoard("제목1", "작성자1"));
-        boardMapper.insertBoard(newBoard("제목2", "작성자2"));
+        boardMapper.insertBoard(newBoard("제목1"));
+        boardMapper.insertBoard(newBoard("제목2"));
         boardMapper.deleteBoard(findIdByTitle("제목2"));
 
         int count = boardMapper.getBoardCount();
@@ -109,7 +122,7 @@ class BoardMapperTest {
 
     @Test
     void getBoardDetail_삭제된_게시글은_조회되지_않는다() {
-        boardMapper.insertBoard(newBoard("제목1", "작성자1"));
+        boardMapper.insertBoard(newBoard("제목1"));
         Long id = findIdByTitle("제목1");
         boardMapper.deleteBoard(id);
 
@@ -120,15 +133,13 @@ class BoardMapperTest {
 
     @Test
     void updateBoard_제목과_내용이_수정된다() {
-        boardMapper.insertBoard(newBoard("원래제목", "작성자1"));
+        boardMapper.insertBoard(newBoard("원래제목"));
         Long id = findIdByTitle("원래제목");
 
         BoardDto updateDto = new BoardDto();
         updateDto.setId(id);
         updateDto.setTitle("수정된제목");
         updateDto.setContent("수정된내용");
-        updateDto.setAuthor("작성자1");
-        updateDto.setPassword("1234");
         boardMapper.updateBoard(updateDto);
 
         BoardDto result = boardMapper.getBoardDetail(id);
@@ -139,7 +150,7 @@ class BoardMapperTest {
 
     @Test
     void viewCountPlus_조회수가_1_증가한다() {
-        boardMapper.insertBoard(newBoard("제목1", "작성자1"));
+        boardMapper.insertBoard(newBoard("제목1"));
         Long id = findIdByTitle("제목1");
 
         boardMapper.viewCountPlus(id);
@@ -147,17 +158,5 @@ class BoardMapperTest {
 
         BoardDto result = boardMapper.getBoardDetail(id);
         assertThat(result.getViewCount()).isEqualTo(2);
-    }
-
-    @Test
-    void passwordCheck_저장된_비밀번호를_반환한다() {
-        BoardDto boardDto = newBoard("제목1", "작성자1");
-        boardDto.setPassword("5678");
-        boardMapper.insertBoard(boardDto);
-        Long id = findIdByTitle("제목1");
-
-        String storedPassword = boardMapper.passwordCheck(id);
-
-        assertThat(storedPassword.trim()).isEqualTo("5678");
     }
 }

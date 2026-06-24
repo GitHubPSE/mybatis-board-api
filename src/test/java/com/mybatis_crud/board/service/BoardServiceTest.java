@@ -7,11 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -23,6 +26,13 @@ class BoardServiceTest {
 
     @InjectMocks
     private BoardService boardService;
+
+    private BoardDto boardOwnedBy(String userId) {
+        BoardDto board = new BoardDto();
+        board.setId(1L);
+        board.setUserId(userId);
+        return board;
+    }
 
     @Test
     void getBoardList_계산된_offset과_totalPages를_반환한다() {
@@ -51,54 +61,64 @@ class BoardServiceTest {
     }
 
     @Test
-    void insertBoard_매퍼의_insertBoard를_호출한다() {
+    void insertBoard_로그인아이디를_userId로_설정해서_등록한다() {
         BoardDto boardDto = new BoardDto();
+        boardDto.setTitle("제목");
 
-        boardService.insertBoard(boardDto);
+        boardService.insertBoard(boardDto, "user1");
 
-        verify(boardMapper).insertBoard(boardDto);
+        verify(boardMapper).insertBoard(argThat(dto -> "user1".equals(dto.getUserId())));
     }
 
     @Test
-    void updateBoard_매퍼의_updateBoard를_호출한다() {
-        BoardDto boardDto = new BoardDto();
+    void updateBoard_작성자가_본인이면_매퍼의_updateBoard를_호출한다() {
+        when(boardMapper.getBoardDetail(1L)).thenReturn(boardOwnedBy("user1"));
+        BoardDto updateDto = new BoardDto();
+        updateDto.setId(1L);
+        updateDto.setTitle("수정된제목");
 
-        boardService.updateBoard(boardDto);
+        boardService.updateBoard(updateDto, "user1");
 
-        verify(boardMapper).updateBoard(boardDto);
+        verify(boardMapper).updateBoard(updateDto);
     }
 
     @Test
-    void deleteBoard_매퍼의_deleteBoard를_호출한다() {
-        boardService.deleteBoard(1L);
+    void updateBoard_작성자가_아니면_AccessDeniedException을_던진다() {
+        when(boardMapper.getBoardDetail(1L)).thenReturn(boardOwnedBy("user1"));
+        BoardDto updateDto = new BoardDto();
+        updateDto.setId(1L);
+
+        assertThatThrownBy(() -> boardService.updateBoard(updateDto, "user2"))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(boardMapper, never()).updateBoard(any());
+    }
+
+    @Test
+    void updateBoard_게시글이_없으면_404_예외를_던진다() {
+        when(boardMapper.getBoardDetail(1L)).thenReturn(null);
+        BoardDto updateDto = new BoardDto();
+        updateDto.setId(1L);
+
+        assertThatThrownBy(() -> boardService.updateBoard(updateDto, "user1"))
+                .isInstanceOf(ResponseStatusException.class);
+        verify(boardMapper, never()).updateBoard(any());
+    }
+
+    @Test
+    void deleteBoard_작성자가_본인이면_매퍼의_deleteBoard를_호출한다() {
+        when(boardMapper.getBoardDetail(1L)).thenReturn(boardOwnedBy("user1"));
+
+        boardService.deleteBoard(1L, "user1");
 
         verify(boardMapper).deleteBoard(1L);
     }
 
     @Test
-    void passwordCheck_비밀번호가_일치하면_true를_반환한다() {
-        when(boardMapper.passwordCheck(1L)).thenReturn("1234");
+    void deleteBoard_작성자가_아니면_AccessDeniedException을_던진다() {
+        when(boardMapper.getBoardDetail(1L)).thenReturn(boardOwnedBy("user1"));
 
-        boolean result = boardService.passwordCheck(1L, "1234");
-
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    void passwordCheck_비밀번호가_다르면_false를_반환한다() {
-        when(boardMapper.passwordCheck(1L)).thenReturn("1234");
-
-        boolean result = boardService.passwordCheck(1L, "9999");
-
-        assertThat(result).isFalse();
-    }
-
-    @Test
-    void passwordCheck_게시글이_없으면_false를_반환한다() {
-        when(boardMapper.passwordCheck(1L)).thenReturn(null);
-
-        boolean result = boardService.passwordCheck(1L, "1234");
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> boardService.deleteBoard(1L, "user2"))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(boardMapper, never()).deleteBoard(any());
     }
 }
