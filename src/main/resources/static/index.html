@@ -61,6 +61,12 @@
         loadList(page);
     });
 
+    // 사용자 입력값(제목, 작성자)을 HTML에 끼워넣기 전에 이스케이프 처리
+    // (안 하면 회원가입 아이디/게시글 제목에 <img onerror=...> 같은 걸 넣어서 XSS가 가능해짐)
+    function escapeHtml(value) {
+        return $('<div>').text(value).html();
+    }
+
     // 게시글 목록 불러오기
     function loadList(page){
         $.ajax({
@@ -74,8 +80,8 @@
                     $.each(data.list, function(index, board){
                         html += '<tr>' +
                             '<td class="td-center">' + board.id + '</td>' +
-                            '<td><a class="title-link" href="/detail.html?id=' + board.id + '">' + board.title + '</a></td>' +
-                            '<td class="td-center text-nowrap">' + board.userId + '</td>' +
+                            '<td><a class="title-link" href="/detail.html?id=' + board.id + '">' + escapeHtml(board.title) + '</a></td>' +
+                            '<td class="td-center text-nowrap">' + escapeHtml(board.userId) + '</td>' +
                             '<td class="td-center">' + board.regDate.slice(0, 16).replace('T', ' ') + '</td>' +
                             '<td class="td-center">' + board.viewCount + '</td>' +
                             '</tr>';

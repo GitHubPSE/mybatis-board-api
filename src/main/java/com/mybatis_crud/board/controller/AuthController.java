@@ -2,6 +2,7 @@ package com.mybatis_crud.board.controller;
 
 import com.mybatis_crud.board.dto.AuthRequest;
 import com.mybatis_crud.board.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody AuthRequest request){
+    public ResponseEntity<Void> signup(@Valid @RequestBody AuthRequest request){
         authService.signUp(request.getId(), request.getPassword());
         return ResponseEntity.ok().build();
     }
