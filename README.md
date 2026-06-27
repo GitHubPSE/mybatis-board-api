@@ -172,7 +172,7 @@ Base URL: `http://localhost:8080`
 | PUT | `/api/board/{id}/update` | 게시글 수정 (작성자만) | O |
 | PATCH | `/api/board/{id}/delete` | 게시글 삭제 (소프트 딜리트, 작성자만) | O |
 
-인증이 필요한 요청은 `Authorization: Bearer <token>` 헤더가 있어야 하며, 작성자가 아닌 사용자가 수정/삭제를 시도하면 403을 반환합니다.
+인증이 필요한 요청은 `Authorization: Bearer <token>` 헤더가 있어야 하며, 작성자가 아닌 사용자가 수정/삭제를 시도하면 403을 반환합니다. 제목/내용이 비어 있거나 제목이 100자를 초과하면 400을 반환합니다.
 
 ### 목록 조회 응답 예시
 

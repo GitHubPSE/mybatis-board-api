@@ -2,6 +2,7 @@ package com.mybatis_crud.board.controller;
 
 import com.mybatis_crud.board.dto.BoardDto;
 import com.mybatis_crud.board.service.BoardService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,14 +35,14 @@ public class BoardController {
 
     // 게시글 등록
     @PostMapping
-    public ResponseEntity<Void> insertBoard(@RequestBody BoardDto boardDto) {
+    public ResponseEntity<Void> insertBoard(@Valid @RequestBody BoardDto boardDto) {
         boardService.insertBoard(boardDto, currentLoginId());
         return ResponseEntity.ok().build();
     }
 
     // 게시글 수정 (작성자만 가능)
     @PutMapping("/{id}/update")
-    public ResponseEntity<Void> updateBoard(@PathVariable Long id, @RequestBody BoardDto boardDto) {
+    public ResponseEntity<Void> updateBoard(@PathVariable Long id, @Valid @RequestBody BoardDto boardDto) {
         boardDto.setId(id);
         boardService.updateBoard(boardDto, currentLoginId());
         return ResponseEntity.ok().build();
