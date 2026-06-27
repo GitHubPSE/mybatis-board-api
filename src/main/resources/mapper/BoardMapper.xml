@@ -7,15 +7,35 @@
         SELECT id, title, user_id, view_count, reg_date, update_date
         FROM board
         WHERE del_yn = 'N'
+        <if test="keyword != null and keyword != ''">
+            <choose>
+                <when test="searchType == 'userId'">
+                    AND user_id LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <otherwise>
+                    AND title LIKE CONCAT('%', #{keyword}, '%')
+                </otherwise>
+            </choose>
+        </if>
         ORDER BY id DESC
         LIMIT #{pageSize} OFFSET #{offset}
     </select>
 
     <!--게시글 전체 수 조회 (페이징용)-->
-    <select id="getBoardCount" resultType="int">
+    <select id="getBoardCount" parameterType="com.mybatis_crud.board.dto.BoardDto" resultType="int">
         SELECT COUNT(*)
         FROM board
         WHERE del_yn = 'N'
+        <if test="keyword != null and keyword != ''">
+            <choose>
+                <when test="searchType == 'userId'">
+                    AND user_id LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <otherwise>
+                    AND title LIKE CONCAT('%', #{keyword}, '%')
+                </otherwise>
+            </choose>
+        </if>
     </select>
 
     <!--게시글 상세 조회-->

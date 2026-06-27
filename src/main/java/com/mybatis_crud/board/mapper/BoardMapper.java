@@ -13,5 +13,5 @@ public interface BoardMapper {
     void updateBoard(BoardDto boardDto);
     void deleteBoard(Long id);
     void viewCountPlus(Long id);
-    int getBoardCount();
+    int getBoardCount(BoardDto boardDto);
 }

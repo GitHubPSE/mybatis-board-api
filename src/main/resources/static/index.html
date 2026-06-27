@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
-    <title>게시판</title>
+    <title>영화 리뷰</title>
 </head>
 <body>
 <div class="container mt-5">
   <div class="d-flex justify-content-end align-items-center gap-2 mb-2" id="authNav"></div>
   <div class="board-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="board-title">게시판</h5>
+        <h5 class="board-title mb-0">영화 리뷰</h5>
         <div class="d-flex align-items-center gap-2">
             <select id="pageSize" class="form-select" style="width:auto;">
                 <option value="5">5</option>
@@ -34,6 +34,14 @@
         <tbody id="list"></tbody>
     </table>
     <div class="d-flex justify-content-center mt-3" id="pagination"></div>
+    <div class="d-flex justify-content-center gap-2 mt-2">
+        <select id="searchType" class="form-select" style="width:auto;">
+            <option value="title">제목</option>
+            <option value="userId">작성자</option>
+        </select>
+        <input type="text" id="keyword" class="form-control" placeholder="검색어를 입력하세요" style="width:300px;">
+        <button id="searchBtn" class="btn btn-outline-secondary rounded-pill px-3">검색</button>
+    </div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
@@ -42,24 +50,45 @@
 <script>
     renderAuthNav();
 
-    // URL 파라미터에서 페이지 정보 가져오기
+    // URL 파라미터에서 페이지/검색 정보 가져오기
     const param = new URLSearchParams(window.location.search);
-    const page = param.get('page') ? param.get('page') : 1;
-    const pageSize = param.get('pageSize')? param.get('pageSize') : 10;
+    const page = param.get('page') || 1;
+    const pageSize = param.get('pageSize') || 10;
+    const keyword = param.get('keyword') || '';
+    const searchType = param.get('searchType') || 'title';
 
-    // URL 파리미터로 게시글 가져오기
+    // 초기값 설정
     $('#pageSize').val(pageSize);
+    $('#searchType').val(searchType);
+    $('#keyword').val(keyword);
     loadList(page);
 
-    //페이지 사이즈 변경
+    // 페이지 사이즈 변경 (검색 상태 유지)
     $('#pageSize').on('change', function() {
-        location.href = '/index.html?page=1&pageSize=' + $(this).val();
+        location.href = buildUrl(1, $(this).val(), keyword, searchType);
     });
 
     // 뒤로가기 시 조회수 정상 조회용
     window.addEventListener('pageshow', function(){
         loadList(page);
     });
+
+    // 검색 버튼
+    $('#searchBtn').on('click', function() {
+        location.href = buildUrl(1, pageSize, $('#keyword').val().trim(), $('#searchType').val());
+    });
+
+    // 엔터키로 검색
+    $('#keyword').on('keydown', function(e) {
+        if (e.key === 'Enter') $('#searchBtn').click();
+    });
+
+    // URL 생성 헬퍼
+    function buildUrl(p, ps, kw, st) {
+        let url = '/index.html?page=' + p + '&pageSize=' + ps;
+        if (kw) url += '&keyword=' + encodeURIComponent(kw) + '&searchType=' + st;
+        return url;
+    }
 
     // 사용자 입력값(제목, 작성자)을 HTML에 끼워넣기 전에 이스케이프 처리
     // (안 하면 회원가입 아이디/게시글 제목에 <img onerror=...> 같은 걸 넣어서 XSS가 가능해짐)
@@ -69,8 +98,11 @@
 
     // 게시글 목록 불러오기
     function loadList(page){
+        let url = '/api/board/list?page=' + page + '&pageSize=' + $('#pageSize').val();
+        if (keyword) url += '&keyword=' + encodeURIComponent(keyword) + '&searchType=' + searchType;
+
         $.ajax({
-            url: '/api/board/list?page=' + page + '&pageSize=' + $('#pageSize').val(),
+            url: url,
             type: 'GET',
             success:function(data){
                 let html = '';
@@ -93,12 +125,12 @@
         });
     }
 
-    // 페이징
+    // 페이징 (검색 상태 유지)
     function renderPagination(totalPages, page){
         let html = '<ul class="pagination">';
         for(let i = 1; i <= totalPages; i++){
             html += '<li class="page-item ' + (i == page ? 'active' : '') + '">' +
-                '<a class="page-link rounded-0" href="/index.html?page=' + i + '&pageSize=' + pageSize + '">' + i + '</a>'
+                '<a class="page-link rounded-0" href="' + buildUrl(i, pageSize, keyword, searchType) + '">' + i + '</a>' +
                 '</li>';
         }
         html += "</ul>";

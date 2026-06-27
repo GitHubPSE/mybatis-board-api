@@ -48,7 +48,7 @@ class BoardControllerTest {
         BoardDto board = new BoardDto();
         board.setId(1L);
         board.setTitle("제목1");
-        when(boardService.getBoardList(1, 10))
+        when(boardService.getBoardList(1, 10, null, null))
                 .thenReturn(Map.of("list", List.of(board), "page", 1, "totalPages", 1));
 
         mockMvc.perform(get("/api/board/list").param("page", "1").param("pageSize", "10"))

@@ -18,8 +18,12 @@ public class BoardController {
 
     // 게시글 목록 조회
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> getBoardList(@RequestParam int page, @RequestParam int pageSize) {
-        return ResponseEntity.ok(boardService.getBoardList(page, pageSize));
+    public ResponseEntity<Map<String, Object>> getBoardList(
+            @RequestParam int page,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String searchType) {
+        return ResponseEntity.ok(boardService.getBoardList(page, pageSize, keyword, searchType));
     }
 
     // 게시글 상세 조회

@@ -115,7 +115,7 @@ class BoardMapperTest {
         boardMapper.insertBoard(newBoard("제목2"));
         boardMapper.deleteBoard(findIdByTitle("제목2"));
 
-        int count = boardMapper.getBoardCount();
+        int count = boardMapper.getBoardCount(new BoardDto());
 
         assertThat(count).isEqualTo(1);
     }

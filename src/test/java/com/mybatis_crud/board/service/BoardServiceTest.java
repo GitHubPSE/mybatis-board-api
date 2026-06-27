@@ -36,10 +36,10 @@ class BoardServiceTest {
 
     @Test
     void getBoardList_계산된_offset과_totalPages를_반환한다() {
-        when(boardMapper.getBoardCount()).thenReturn(25);
+        when(boardMapper.getBoardCount(any(BoardDto.class))).thenReturn(25);
         when(boardMapper.getBoardList(any(BoardDto.class))).thenReturn(List.of(new BoardDto()));
 
-        Map<String, Object> result = boardService.getBoardList(2, 10);
+        Map<String, Object> result = boardService.getBoardList(2, 10, null, null);
 
         assertThat(result.get("page")).isEqualTo(2);
         assertThat(result.get("totalPages")).isEqualTo(3);

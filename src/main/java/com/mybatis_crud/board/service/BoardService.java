@@ -18,13 +18,15 @@ public class BoardService {
     private final BoardMapper boardMapper;
 
     // 게시글 목록
-    public Map<String, Object> getBoardList(int page, int pageSize) {
+    public Map<String, Object> getBoardList(int page, int pageSize, String keyword, String searchType) {
         BoardDto boardDto = new BoardDto();
         boardDto.setPageSize(pageSize);
         // offset -> 1페이지 : 0번째부터, 2페이지 : 10번째부터...
         boardDto.setOffset((page - 1) * pageSize);
+        boardDto.setKeyword(keyword);
+        boardDto.setSearchType(searchType);
 
-        int totalCount = boardMapper.getBoardCount();
+        int totalCount = boardMapper.getBoardCount(boardDto);
         int totalPages = (totalCount + pageSize - 1) / pageSize;
 
         Map<String, Object> result = new HashMap<>();

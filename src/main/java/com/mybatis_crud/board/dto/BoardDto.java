@@ -17,4 +17,6 @@ public class BoardDto {
     private String delYn;
     private int pageSize;
     private int offset;
+    private String keyword;
+    private String searchType;
 }
