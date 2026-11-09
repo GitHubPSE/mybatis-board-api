@@ -2,7 +2,7 @@
 
 Spring Boot + MyBatis + PostgreSQL 기반의 영화 리뷰 게시판 웹 애플리케이션입니다. JWT 기반 회원가입/로그인과 작성자 본인만 수정/삭제할 수 있는 권한 체크를 포함합니다.
 
-**Live Demo**: [https://boardforduck.duckdns.org](https://boardforduck.duckdns.org)
+> AWS Lightsail에 배포해 운영했으며, 현재는 비용 문제로 서버를 내린 상태입니다. 배포 구성은 아래 [배포 아키텍처](#배포-아키텍처)와 [CI/CD](#cicd)에 정리되어 있습니다.
 
 ## 기술 스택
 
@@ -32,7 +32,7 @@ AWS Lightsail (1대)
                                   └─ db   (PostgreSQL)
 ```
 
-빌드는 GitHub Actions에서 처리하고, Lightsail은 완성된 이미지를 받아 실행만 합니다. `main`에 push되면 테스트 → 이미지 빌드 → 배포가 자동으로 이어집니다.
+빌드는 GitHub Actions에서 처리하고, Lightsail은 완성된 이미지를 받아 실행만 하도록 구성했습니다. `main`에 push되면 테스트 → 이미지 빌드 → 배포가 자동으로 이어집니다.
 
 ---
 
@@ -250,7 +250,7 @@ docker compose up -d db
 
 ## 테스트
 
-네 계층으로 나눠서 검증합니다.
+세 계층으로 나눠서 검증합니다.
 
 | 계층 | 파일 | 방식 | 검증 내용 |
 |------|------|------|-----------|
@@ -278,7 +278,7 @@ curl http://localhost:8080/actuator/health
 {"status":"UP"}
 ```
 
-서버 인스턴스가 켜져 있는 것과 애플리케이션이 정상적으로 요청을 처리할 수 있는 것은 다른 문제이기 때문에, 배포 환경에서 이 엔드포인트로 실제 동작 여부를 확인합니다.
+서버 인스턴스가 켜져 있는 것과 애플리케이션이 정상적으로 요청을 처리할 수 있는 것은 다른 문제이기 때문에, 운영 중에는 이 엔드포인트로 실제 동작 여부를 확인했습니다.
 
 ---
 
@@ -292,4 +292,6 @@ curl http://localhost:8080/actuator/health
 
 이미지 빌드는 GitHub Actions의 러너에서 처리하고, Lightsail은 완성된 이미지를 받아 실행만 하기 때문에 운영 서버에 별도의 빌드 부담이 없습니다.
 
-> 운영 환경의 `JWT_SECRET`은 Lightsail에 별도로 설정된 환경변수를 사용하며, 저장소에는 포함되지 않습니다.
+> 운영 환경의 `JWT_SECRET`은 Lightsail에 별도로 설정한 환경변수를 사용했으며, 저장소에는 포함하지 않았습니다.
+
+README 등 문서(`*.md`)만 바뀐 push에서는 빌드·배포가 필요 없으므로 워크플로가 실행되지 않도록 `paths-ignore`로 제외했습니다.
