@@ -284,7 +284,7 @@ curl http://localhost:8080/actuator/health
 
 ## CI/CD
 
-`main` 브랜치에 push되면 `.github/workflows/ci.yml`이 아래 순서로 실행됩니다.
+`main` 브랜치에 push되면 `.github/workflows/ci.yml`이 아래 순서로 실행되도록 구성했습니다.
 
 1. **test** — `./gradlew test` (실패 시 이후 단계 전부 중단)
 2. **build-and-push** — Docker 이미지를 빌드해 `ghcr.io/githubpse/mybatis-board-api-app`에 업로드
@@ -294,4 +294,4 @@ curl http://localhost:8080/actuator/health
 
 > 운영 환경의 `JWT_SECRET`은 Lightsail에 별도로 설정한 환경변수를 사용했으며, 저장소에는 포함하지 않았습니다.
 
- 프로젝트를 마무리하면서 서버를 내리고 GitHub Actions 워크플로도 비활성화했습니다. 위 내용은 운영 당시의 구성입니다.
+> 프로젝트를 마무리하면서 서버를 내리고 GitHub Actions 워크플로도 비활성화했습니다. 위 내용은 운영 당시의 구성입니다.
