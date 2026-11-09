@@ -294,4 +294,4 @@ curl http://localhost:8080/actuator/health
 
 > 운영 환경의 `JWT_SECRET`은 Lightsail에 별도로 설정한 환경변수를 사용했으며, 저장소에는 포함하지 않았습니다.
 
-README 등 문서(`*.md`)만 바뀐 push에서는 빌드·배포가 필요 없으므로 워크플로가 실행되지 않도록 `paths-ignore`로 제외했습니다.
+ 프로젝트를 마무리하면서 서버를 내리고 GitHub Actions 워크플로도 비활성화했습니다. 위 내용은 운영 당시의 구성입니다.
